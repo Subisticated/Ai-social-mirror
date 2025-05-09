@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<body>
+  <h2>Test Audio Upload</h2>
+  <form id="uploadForm" enctype="multipart/form-data">
+    <input type="file" name="audio" />
+    <button type="submit">Upload & Transcribe</button>
+  </form>
+  <pre id="output"></pre>
+
+  <script>
+    const form = document.getElementById('uploadForm');
+    const output = document.getElementById('output');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const response = await fetch('http://localhost:3000/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      const result = await response.json();
+      output.innerText = JSON.stringify(result, null, 2);
+    });
+  </script>
+</body>
+</html>

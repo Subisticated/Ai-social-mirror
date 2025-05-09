@@ -1,0 +1,11 @@
+# Node modules
+node_modules
+
+# Environment variables
+.env
+
+# Uploads folder
+uploads
+upload
+whisper-env
+

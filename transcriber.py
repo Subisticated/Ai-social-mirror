@@ -9,3 +9,4 @@ if not result or 'text' not in result:
     sys.exit(1)
 else:
     print(result['text'])
+    sys.exit(0)

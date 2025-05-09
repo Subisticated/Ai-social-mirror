@@ -8,6 +8,13 @@
   </form>
   <pre id="output"></pre>
 
+  <h2>Test Face Recognition</h2>
+  <button id="toggleFaceRecognition">Start Face Recognition</button>
+  <pre id="faceOutput"></pre>
+
+  <h2>Test Emotion Recognition</h2>
+  <button id="toggleEmotionRecognition">Toggle Emotion Recognition</button>
+
   <script>
     const form = document.getElementById('uploadForm');
     const output = document.getElementById('output');
@@ -22,6 +29,50 @@
       const result = await response.json();
       output.innerText = JSON.stringify(result, null, 2);
     });
+
+    const toggleButton = document.getElementById('toggleFaceRecognition');
+    const faceOutput = document.getElementById('faceOutput');
+    let faceRecognitionActive = false;
+
+    toggleButton.addEventListener('click', async () => {
+      faceRecognitionActive = !faceRecognitionActive;
+      toggleButton.innerText = faceRecognitionActive ? 'Stop Face Recognition' : 'Start Face Recognition';
+
+      if (faceRecognitionActive) {
+        try {
+          const response = await fetch('http://localhost:3000/analyze', {
+            method: 'POST',
+          });
+          const result = await response.json();
+          faceOutput.innerText = JSON.stringify(result, null, 2);
+        } catch (error) {
+          faceOutput.innerText = 'Error: ' + error.message;
+        }
+      } else {
+        faceOutput.innerText = '';
+      }
+    });
+
+    const toggleEmotionButton = document.getElementById('toggleEmotionRecognition');
+
+    toggleEmotionButton.addEventListener('click', async () => {
+      try {
+        const response = await fetch('http://localhost:3000/toggle-emotion-recognition', {
+          method: 'POST',
+        });
+        const result = await response.json();
+        alert(`Emotion recognition is now ${result.status ? 'enabled' : 'disabled'}`);
+      } catch (error) {
+        alert('Error toggling emotion recognition: ' + error.message);
+      }
+    });
+
+    const eventSource = new EventSource('http://localhost:3000/notifications');
+
+    eventSource.onmessage = (event) => {
+      const notification = JSON.parse(event.data);
+      alert(notification.message);
+    };
   </script>
 </body>
 </html>

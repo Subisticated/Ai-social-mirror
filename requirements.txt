@@ -1,0 +1,4 @@
+numpy==2.1.1
+loguru==0.7.3
+ultralytics==8.3.102
+gdown==5.2.0

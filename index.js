@@ -4,6 +4,8 @@ const { exec } = require('child_process');
 const axios = require('axios');
 const fs = require('fs');
 require('dotenv').config();
+const { Client } = require('@notionhq/client');
+const notion = new Client({ auth: process.env.NOTION_TOKEN });
 
 const app = express();
 const upload = multer({ dest: 'uploads/' });
@@ -37,6 +39,10 @@ app.post('/upload', upload.single('audio'), async (req, res) => {
         console.log('📄 Summary:', summary);
 
         res.json({ transcript, summary });
+        await saveToNotion({
+          title: `Meeting - ${new Date().toLocaleDateString()}`,
+          summary
+        });
       } catch (gptError) {
         console.error('❌ Cohere\'s Summarization Error:', gptError.message);
         res.status(500).json({ error: 'Failed to summarize.' });
@@ -47,6 +53,42 @@ app.post('/upload', upload.single('audio'), async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+async function saveToNotion({ title, summary }) {
+  try {
+    const response = await notion.pages.create({
+      parent: { database_id: process.env.NOTION_DATABASE_ID },
+      properties: {
+        Title: {
+          title: [
+            {
+              text: {
+                content: title,
+              },
+            },
+          ],
+        },
+        Summary: {
+          rich_text: [
+            {
+              text: {
+                content: summary.slice(0, 2000), // Notion text limit safeguard
+              },
+            },
+          ],
+        },
+        Date: {
+          date: {
+            start: new Date().toISOString(),
+          },
+        },
+      },
+    });
+
+    console.log("✅ Notion entry created:", response.id);
+  } catch (error) {
+    console.error("❌ Notion error:", error.response?.data || error.message);
+  }
+}
 
 async function summarizeWithCohere(text) {
   try {

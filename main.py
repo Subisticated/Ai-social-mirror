@@ -18,7 +18,6 @@ from src import (
     download_artifact
 )
 
-# Add a global variable to control emotion recognition
 toggle_emotion_recognition = True
 
 

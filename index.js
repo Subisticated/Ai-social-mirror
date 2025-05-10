@@ -38,8 +38,7 @@ app.post('/upload', upload.single('audio'), async (req, res) => {
 
       const transcript = stdout.trim();
       console.log('✅ Transcription complete.');
-      console.log('📝 Transcript:', transcript.slice(0, 300) + '...'); // First 300 chars only
-
+      console.log('📝 Transcript:', transcript.slice(0, 300) + '...');
       console.log('🤖 Sending transcript to Cohere for summarization...');
 
       try {
@@ -146,7 +145,7 @@ async function saveToNotion({ title, summary }) {
           rich_text: [
             {
               text: {
-                content: summary.slice(0, 2000), // Notion text limit safeguard
+                content: summary.slice(0, 2000), 
               },
             },
           ],
@@ -171,8 +170,8 @@ async function summarizeWithCohere(text) {
       'https://api.cohere.ai/v1/summarize',
       {
         text: text,
-        length: 'long', // or 'auto'
-        format: 'paragraph', // can be changed to 'bullets'
+        length: 'long', 
+        format: 'paragraph',
         extractiveness: 'medium',
         temperature: 0.3,
         additional_command: `Convert this transcript into professional minutes of the meeting. Include key points discussed, decisions made, action items, and next steps. Use today's date.`,

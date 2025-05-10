@@ -1,9 +1,104 @@
 <!DOCTYPE html>
 <html>
+<head>
+  <style>
+    body {
+      background-color: black;
+      color: white;
+      font-family: Arial, sans-serif;
+    }
+
+    h2 {
+      color: #ffcc00; /* Contrast color for headings */
+    }
+
+    form {
+      margin: 20px 0;
+    }
+
+    #uploadForm {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #uploadForm input[type="file"] {
+      display: none;
+    }
+
+    #uploadForm label {
+      display: block;
+      width: 50%;
+      margin: 20px auto;
+      padding: 20px;
+      text-align: center;
+      border: 2px dashed #ffcc00; /* Contrast color for drag-and-drop area */
+      border-radius: 10px;
+      background-color: #333;
+      color: #ffcc00;
+      cursor: pointer;
+    }
+
+    button {
+      background-color: #ffcc00;
+      color: black;
+      border: none;
+      padding: 10px 20px;
+      margin: 10px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    button:hover {
+      background-color: #e6b800;
+    }
+
+    pre {
+      background-color: #222;
+      color: #ffcc00;
+      padding: 10px;
+      border-radius: 5px;
+    }
+  
+#toast {
+  visibility: hidden;
+  min-width: 250px;
+  margin-left: -125px;
+  background-color: #ffcc00;
+  color: black;
+  text-align: center;
+  border-radius: 5px;
+  padding: 16px;
+  position: fixed;
+  z-index: 1000;
+  left: 50%;
+  bottom: 30px;
+  font-size: 17px;
+}
+
+#toast.show {
+  visibility: visible;
+  -webkit-animation: fadein 0.5s, fadeout 0.5s 2.5s;
+  animation: fadein 0.5s, fadeout 0.5s 2.5s;
+}
+
+@keyframes fadein {
+  from {bottom: 0; opacity: 0;} 
+  to {bottom: 30px; opacity: 1;}
+}
+
+@keyframes fadeout {
+  from {bottom: 30px; opacity: 1;}
+  to {bottom: 0; opacity: 0;}
+}
+
+</style>
+</head>
 <body>
   <h2>Test Audio Upload</h2>
   <form id="uploadForm" enctype="multipart/form-data">
-    <input type="file" name="audio" />
+    <label for="fileInput">Drag and drop your file here or click to select</label>
+    <input id="fileInput" type="file" name="audio" />
     <button type="submit">Upload & Transcribe</button>
   </form>
   <pre id="output"></pre>
@@ -28,6 +123,24 @@
       });
       const result = await response.json();
       output.innerText = JSON.stringify(result, null, 2);
+    });
+
+    const fileInput = document.getElementById('fileInput');
+    const label = document.querySelector('#uploadForm label');
+
+    label.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      label.style.backgroundColor = '#444';
+    });
+
+    label.addEventListener('dragleave', () => {
+      label.style.backgroundColor = '#333';
+    });
+
+    label.addEventListener('drop', (e) => {
+      e.preventDefault();
+      fileInput.files = e.dataTransfer.files;
+      label.style.backgroundColor = '#333';
     });
 
     const toggleButton = document.getElementById('toggleFaceRecognition');
@@ -69,10 +182,27 @@
 
     const eventSource = new EventSource('http://localhost:3000/notifications');
 
-    eventSource.onmessage = (event) => {
+    // overridden below
       const notification = JSON.parse(event.data);
       alert(notification.message);
-    };
-  </script>
+    ;
+  
+eventSource.onmessage = (event) => {
+  const notification = JSON.parse(event.data);
+  showToast(notification.message);
+};
+
+function showToast(message) {
+  const toast = document.getElementById("toast");
+  toast.innerText = message;
+  toast.className = "show";
+  setTimeout(() => {
+    toast.className = toast.className.replace("show", "");
+  }, 3000);
+}
+
+</script>
+
+<div id="toast"></div>
 </body>
 </html>

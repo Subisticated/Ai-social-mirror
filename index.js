@@ -40,7 +40,7 @@ app.post('/upload', upload.single('audio'), async (req, res) => {
       console.log('✅ Transcription complete.');
       console.log('📝 Transcript:', transcript.slice(0, 300) + '...'); // First 300 chars only
 
-      console.log('🤖 Sending transcript to GPT for summarization...');
+      console.log('🤖 Sending transcript to Cohere for summarization...');
 
       try {
         const summary = await summarizeWithCohere(transcript);

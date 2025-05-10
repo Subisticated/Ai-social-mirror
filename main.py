@@ -1,3 +1,4 @@
+
 """Entry point for Posture & Emotions detection."""
 
 from loguru import logger
@@ -39,7 +40,7 @@ def run(args):
             models_path = download_artifact(path=tmp_dir)
 
         assert os.path.exists(models_path), "models not found!!"
-    
+
         grabber = Grabber(Source.Camera, "")
         pose = Posture(models_path)
         emotion = Emotion(models_path)
@@ -47,7 +48,7 @@ def run(args):
         if args.display:
             plot = Plotter()
 
-        fc = 0 # frame count
+        fc = 0  # frame count
         st = time.time()  # start time
         hunched_start_time = None
 
@@ -66,9 +67,9 @@ def run(args):
             if post == "hunched":
                 if hunched_start_time is None:
                     hunched_start_time = time.time()
-                elif time.time() - hunched_start_time > 3:
+                elif time.time() - hunched_start_time > 10:  # updated to 10s
                     threading.Thread(target=notify_user).start()
-                    hunched_start_time = None  # Reset after notification
+                    hunched_start_time = None  # reset to allow repeated alerts
             else:
                 hunched_start_time = None
 
@@ -88,19 +89,17 @@ def run(args):
                 fc = 0
                 msg += f" FPS: {fps:.2f}"
             if msg:
-                # Send the log message to the Node.js server
                 try:
                     requests.post('http://localhost:3000/logs', json={"log": msg})
                 except requests.exceptions.RequestException as e:
                     logger.error(f"Failed to send log: {e}")
 
-            # maintain 15 FPS
-            d = time.time() - ct
-            if d < 0.066:
-                time.sleep(0.066-d)
+            if (time.time() - ct) < 0.066:
+                time.sleep(0.066 - (time.time() - ct))
 
         grabber.close()
         logger.info("application closed successfully.")
+
 
 def main():
     """main driver function."""
@@ -110,11 +109,12 @@ def main():
     parser.add_argument("-p", "--path", type=str, help="Provide model path.")
     args = parser.parse_args()
     if args.version:
-        print ("Major Version: 1.0.0")
-        print ("Posture Version: 0.0.1")
-        print ("Emotion Version: 0.0.1")
+        print("Major Version: 1.0.0")
+        print("Posture Version: 0.0.1")
+        print("Emotion Version: 0.0.1")
     else:
         run(args)
 
-if __name__=="__main__":
+
+if __name__ == "__main__":
     main()
